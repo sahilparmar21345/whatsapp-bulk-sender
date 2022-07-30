@@ -75,7 +75,10 @@ const sendWhatsappMsgs = async () => {
         // Authorize a client with credentials, then call the Google Sheets API.
         authorize_google(JSON.parse(content), listNumbers);
     });
-    while(rows == undefined);
+    while(rows == undefined){
+      console.log("Waiting for data!")
+      await sleep(3000)
+    };
     if (!rows.length)
         return console.log("No emails found. Skipping whatsapp calls");
     let client;
@@ -104,23 +107,25 @@ const sendWhatsappMsgs = async () => {
         if (conn.connect) {
             client = conn.client;
             // send a text message
-            let i = 1;
-            rows.map(async (row) => {
+            for (let i = 0; i < rows.length; i++){
                 await client.sendMessage({
-                    to: `${row[1]}@c.us`, // you can pass the contact number or group number
+                    to: `${rows[i][1]}@c.us`, // you can pass the contact number or group number
                     body: "hi i'm hydra bot", // message text
                     options: {
                         type: 'sendText', // shipping type
                     }
                 }).then((result) => {
-                    console.log(result); // message result
+                    console.log(`Sent message to ${result.to.remote.user}`); // message result
                 }).catch((error) => {
                     console.log(error); // message error
                 });
-                if (i++ % 10 == 0){
-                    sleep(5000) // wait for 5 secs after sending 10 msgs to avoid ban hammer by whatsapp
+                if ((i+1) % 10 == 0){
+                    console.log("Waiting for 5 seconds!")
+                    await sleep(5000) // wait for 5 secs after sending 10 msgs to avoid ban hammer by whatsapp
+                    console.log("Sending again")
                 }
-            })
+              }
+              console.log("Done sending!")
         }
     });
 };
