@@ -75,7 +75,6 @@ const sendWhatsappMsgs = async () => {
         // Authorize a client with credentials, then call the Google Sheets API.
         authorize_google(JSON.parse(content), listNumbers);
     });
-    await sleep(1000)
     while(rows == undefined);
     if (!rows.length)
         return console.log("No emails found. Skipping whatsapp calls");
