@@ -59,7 +59,6 @@ function listNumbers(auth) {
       rows = res.data.values;
       if (rows.length) {
         console.log('Email, Whatsapp number:');
-        // Print columns A and E, which correspond to indices 0 and 4.
         console.log(`${rows[0][0]}, ${rows[0][1]}`);
         console.log(`${rows[1][0]}, ${rows[1][1]}`);
       } else {
