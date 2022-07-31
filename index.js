@@ -1,10 +1,11 @@
-const hydraBot = require('hydra-bot');
-// const mime = require('mime-types');
 const fs = require('fs');
 const readline = require('readline');
 const {google} = require('googleapis');
 const { time } = require('console');
 require("dotenv").config()
+const wppconnect = require('@wppconnect-team/wppconnect');
+
+
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = 'token.json';
 const SPREADSHEET_ID = process.env.SPREADSHEET_ID
@@ -81,53 +82,20 @@ const sendWhatsappMsgs = async () => {
     };
     if (!rows.length)
         return console.log("No emails found. Skipping whatsapp calls");
-    let client;
-    // start bot service
-    const ev = await hydraBot.initServer();
-
-    // return to current whatsapp interface
-    ev.on('interfaceChange', (change) => {
-        console.log("interfaceChange: ", change);
-    });
-
-    // return qrcode parameters
-    ev.on('qrcode', (qrcode) => {
-        console.log('qrcode: ', qrcode);
-    });
-
-    // return connection information
-    ev.on('connection', async (conn) => {
-
-        // browser information!
-        if (conn.statusFind === 'browser') {
-            console.log('info Browser: ', conn.text);
+      try{
+        const client = await wppconnect.create();
+        for (let i = 0; i < rows.length; i++){
+          try{
+            const result = await client.sendText(`91${rows[i][1]}`, "Hello")
+            console.log(`Sent message to ${result.to}`);
+          } catch(err){
+            console.log(err)
+          }
         }
-
-        // Was connected to whatsapp chat
-        if (conn.connect) {
-            client = conn.client;
-            // send a text message
-            for (let i = 0; i < rows.length; i++){
-                await client.sendMessage({
-                    to: `${rows[i][1]}@c.us`, // you can pass the contact number or group number
-                    body: "hi i'm hydra bot", // message text
-                    options: {
-                        type: 'sendText', // shipping type
-                    }
-                }).then((result) => {
-                    console.log(`Sent message to ${result.to.remote.user}`); // message result
-                }).catch((error) => {
-                    console.log(error); // message error
-                });
-                if ((i+1) % 10 == 0){
-                    console.log("Waiting for 5 seconds!")
-                    await sleep(5000) // wait for 5 secs after sending 10 msgs to avoid ban hammer by whatsapp
-                    console.log("Sending again")
-                }
-              }
-              console.log("Done sending!")
-        }
-    });
+      } catch(e){
+        console.log(e);
+      }
+    
 };
 
 sendWhatsappMsgs();
